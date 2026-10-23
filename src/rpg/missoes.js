@@ -10,10 +10,18 @@ export class Missoes {
     return this.estado.d.missoes[id];
   }
 
-  // 'nova' | 'ativa' | 'pronta' (só falta entregar) | 'concluida'
+  // A missão só aparece depois dos seus pré-requisitos: { missao: 'id' } concluída e/ou { regiao: 'id' } liberada.
+  #disponivel(id) {
+    const r = this.defs[id].requer || {};
+    if (r.missao && this.estadoDe(r.missao) !== 'concluida') return false;
+    if (r.regiao && !this.estado.regiaoLiberada(r.regiao)) return false;
+    return true;
+  }
+
+  // 'bloqueada' | 'nova' | 'ativa' | 'pronta' (só falta entregar) | 'concluida'
   estadoDe(id) {
     const m = this.#salvo(id);
-    if (!m) return 'nova';
+    if (!m) return this.#disponivel(id) ? 'nova' : 'bloqueada';
     if (m.estado === 'concluida') return 'concluida';
     const faltam = this.defs[id].objetivos.filter((o) => !o.final && !m.feitos.includes(o.id));
     return faltam.length ? 'ativa' : 'pronta';
@@ -30,7 +38,7 @@ export class Missoes {
   }
 
   iniciar(id) {
-    if (this.#salvo(id)) return;
+    if (this.estadoDe(id) !== 'nova') return;
     const def = this.defs[id];
     this.estado.d.missoes[id] = { estado: 'ativa', feitos: [] };
     this.estado.emitir('missao_iniciada', { id, def });

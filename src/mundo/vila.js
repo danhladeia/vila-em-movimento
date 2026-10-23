@@ -8,9 +8,13 @@ import { REGIOES } from '../conteudo/unidade1.js';
 //   anel 0-1  Praça do Bairro
 //   anel 2    rua em volta da praça (faixas de pedestre perto da praça)
 //   anel 3    prédios e pracinhas, com as 4 estradas saindo para as regiões
-//   anel 4+   floresta; a estrada termina na névoa que bloqueia cada região
+//   anel 4    floresta; a estrada passa pela névoa que bloqueia cada região
+//   anel 5    clareira de cada região (Trilha, Academia, Arena, Festival), depois da névoa
 export const Q = 10;
-export const LIMITE = 4.5 * Q;
+export const LIMITE = 5.5 * Q;
+export const CLAREIRA = 5 * Q; // distância do centro de cada clareira
+
+const COR_CLAREIRA = { trilha: 0xc9b48a, academia: 0xdcd3c4, arena: 0xe6c99a, festival: 0xb9e3a0 };
 
 const DIRECOES = {
   norte: { di: 0, dj: -1 },
@@ -59,10 +63,10 @@ export function criarVila(bib, colisao) {
 
   // ---------- ruas ----------
   const anel = (i, j) => Math.max(Math.abs(i), Math.abs(j));
-  const ehRua = (i, j) => anel(i, j) === 2 || ((i === 0 || j === 0) && anel(i, j) >= 3 && anel(i, j) <= 4);
+  const ehRua = (i, j) => anel(i, j) === 2 || ((i === 0 || j === 0) && anel(i, j) >= 3 && anel(i, j) <= 5);
 
-  for (let i = -4; i <= 4; i++) {
-    for (let j = -4; j <= 4; j++) {
+  for (let i = -5; i <= 5; i++) {
+    for (let j = -5; j <= 5; j++) {
       if (!ehRua(i, j)) continue;
       const a = anel(i, j);
       let nome = 'road_straight';
@@ -181,7 +185,10 @@ export function criarVila(bib, colisao) {
   // ---------- floresta em volta ----------
   const arvores = bib.nomes('floresta', 'Tree_');
   const pedras = bib.nomes('floresta', 'Rock_');
-  const corredor = (x, z) => (Math.abs(x) < 7 && Math.abs(z) > 32) || (Math.abs(z) < 7 && Math.abs(x) > 32);
+  // Sem árvores na estrada (até as clareiras) nem dentro das clareiras.
+  const centrosClareiras = [[0, -CLAREIRA], [0, CLAREIRA], [-CLAREIRA, 0], [CLAREIRA, 0]];
+  const corredor = (x, z) => (Math.abs(x) < 7 && Math.abs(z) > 32 && Math.abs(z) < 46) || (Math.abs(z) < 7 && Math.abs(x) > 32 && Math.abs(x) < 46)
+    || centrosClareiras.some(([cx, cz]) => Math.hypot(x - cx, z - cz) < 15); // folga para as copas não taparem os moradores
   for (let k = 0; k < 420; k++) {
     const x = (rand() - 0.5) * 150;
     const z = (rand() - 0.5) * 150;
@@ -232,6 +239,75 @@ export function criarVila(bib, colisao) {
     portal.trocarPlaca(`Região ${r.n} · coberta pela névoa`);
     colisao.circulo(lx, lz, 0.4);
     portais.push(portal);
+
+    criarClareira(r, di, dj);
+    barreirasDaMata(di, dj);
+  }
+
+  // Clareira da região, depois da névoa: chão colorido, placa com a semana do caderno e alguns objetos.
+  // `a` = distância para fora da vila, `b` = para o lado (coordenadas locais da estrada).
+  function criarClareira(r, di, dj) {
+    const cx = di * CLAREIRA;
+    const cz = dj * CLAREIRA;
+    const mundo = (a, b) => [cx + di * a - dj * b, cz + dj * a + di * b];
+    const chaoC = new THREE.Mesh(new THREE.CircleGeometry(9.5, 40), new THREE.MeshStandardMaterial({ color: COR_CLAREIRA[r.id], roughness: 1 }));
+    chaoC.rotation.x = -Math.PI / 2;
+    chaoC.position.set(cx, 0.03, cz);
+    chaoC.receiveShadow = true;
+    grupo.add(chaoC);
+
+    const [px, pz] = mundo(2.5, 5.5);
+    const placaC = criarPlaca([r.nome, `Semana ${r.semana} · ${r.tema}`], { largura: 4.8 });
+    placaC.position.set(px, 0, pz);
+    placaC.rotation.y = Math.atan2(di * 3.6 * Q - px, dj * 3.6 * Q + 12 - pz);
+    grupo.add(placaC);
+    colisao.circulo(px, pz, 0.4);
+
+    const por2 = (obj, a, b, raio = 0, rot = 0) => {
+      const [x, z] = mundo(a, b);
+      obj.position.set(x, obj.position.y, z);
+      obj.rotation.y = rot;
+      grupo.add(obj);
+      if (raio) colisao.circulo(x, z, raio);
+      return obj;
+    };
+    if (r.id === 'trilha') {
+      [[5, -6], [6.5, -2], [6.5, 3], [5, 7], [-1, -7.5], [-1, 7.5]].forEach(([a, b], k) => {
+        const pedra = bib.modelo('floresta', ['Rock_1_A', 'Rock_3_A', 'Rock_1_E'][k % 3]);
+        pedra.scale.multiplyScalar(1.6);
+        por2(pedra, a, b, 0.9, k);
+      });
+    } else if (r.id === 'academia') {
+      const piscina = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.8, 0.35, 32), new THREE.MeshStandardMaterial({ color: 0x5fb8f0, roughness: 0.3 }));
+      piscina.position.y = 0.17;
+      por2(piscina, 4.5, -4, 2.8);
+      [[5.5, 3], [2, 6.5]].forEach(([a, b]) => por2(bib.modelo('cidade', 'bench'), a, b, 1.1, Math.atan2(-di, -dj)));
+      por2(bib.modelo('cidade', 'box_A'), 6, 6.5, 1);
+    } else if (r.id === 'arena') {
+      [[6, -6], [6, 6], [-3, -7.5], [-3, 7.5]].forEach(([a, b]) => por2(bib.modelo('cidade', 'streetlight'), a, b, 0.35, Math.atan2(-a, -b)));
+      por2(bib.modelo('cidade', 'box_B'), 6.5, 0, 1);
+    } else if (r.id === 'festival') {
+      [[5.5, -4], [5.5, 4]].forEach(([a, b]) => por2(bib.modelo('cidade', 'bench'), a, b, 1.1, Math.atan2(-di, -dj)));
+      [[7, -1], [7, 1.5], [-2, -7.5], [-2, 7.5], [3, -7.5], [3, 7.5]].forEach(([a, b]) => {
+        const m = bib.modelo('floresta', 'Bush_2_A');
+        m.scale.multiplyScalar(3);
+        por2(m, a, b, 0.8);
+      });
+    }
+  }
+
+  // Paredes invisíveis na mata ao lado de cada estrada: só dá para chegar à clareira pela estrada (passando pela névoa).
+  function barreirasDaMata(di, dj) {
+    const s = di || dj;
+    const bloco = (b0, b1, a0, a1) => {
+      // a = eixo da estrada (para fora), b = eixo transversal
+      const [x0, x1, z0, z1] = di ? [s * a0, s * a1, b0, b1] : [b0, b1, s * a0, s * a1];
+      colisao.caixa((x0 + x1) / 2, (z0 + z1) / 2, Math.abs(x1 - x0), Math.abs(z1 - z0));
+    };
+    bloco(-LIMITE, -5, 35.5, 46);
+    bloco(5, LIMITE, 35.5, 46);
+    bloco(-LIMITE, -10, 46, LIMITE);
+    bloco(10, LIMITE, 46, LIMITE);
   }
 
   // Tira a névoa da estrada de uma região (animado quando acontece durante o jogo).
@@ -262,7 +338,7 @@ export function lugarEm(x, z) {
       if (!r.porta) continue;
       const { di, dj } = DIRECOES[r.porta];
       const naEstrada = di ? Math.sign(x) === di && Math.abs(z) < Q : Math.sign(z) === dj && Math.abs(x) < Q;
-      if (naEstrada) return `Estrada para: ${r.nome}`;
+      if (naEstrada) return m > 4.5 * Q ? r.nome : `Estrada para: ${r.nome}`;
     }
   }
   return 'Vila Ativa';

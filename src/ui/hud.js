@@ -63,6 +63,7 @@ export class Hud {
       this.atualizarMissao();
     });
     estado.on('resposta', () => this.aviso('Resposta guardada no Diário', 'diario'));
+    estado.on('jogo', ({ estrelas, recorde }) => this.aviso(`${recorde ? 'Novo recorde: ' : ''}${'★'.repeat(estrelas)}`, 'xp'));
     estado.on('regiao', () => this.aviso('A névoa se afastou de uma estrada!', 'mapa', 'grande'));
   }
 
@@ -80,7 +81,7 @@ export class Hud {
 
   atualizarMissao() {
     const el = $('hud-missao');
-    const [id] = this.missoes.ativas();
+    const id = this.missoes.ativas().at(-1); // a missão aceita por último
     if (!id) {
       el.classList.add('oculto');
       return;

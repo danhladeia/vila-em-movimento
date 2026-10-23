@@ -48,15 +48,18 @@ export class CaixaDialogo {
     });
   }
 
-  // aoAcao(nome): nó com `acao`; aoResposta(id, pergunta, texto): nó com `pergunta`; aoFechar(): fim.
-  // `apelido` substitui {nome} nas falas.
-  abrir(nome, dialogo, { aoAcao = () => {}, aoResposta = () => {}, aoFechar = () => {}, apelido = '' } = {}) {
+  // aoAcao(nome): nó com `acao`; aoResposta(id, pergunta, texto): nó com `pergunta`;
+  // aoJogo(id) -> Promise<resultado|null>: nó com `jogo` (a caixa some enquanto o minijogo roda);
+  // aoFechar(): fim. `apelido` substitui {nome} nas falas.
+  abrir(nome, dialogo, { aoAcao = () => {}, aoResposta = () => {}, aoJogo = async () => null, aoFechar = () => {}, apelido = '' } = {}) {
     this.nome = nome;
     this.dialogo = dialogo;
     this.aoAcao = aoAcao;
     this.aoResposta = aoResposta;
+    this.aoJogo = aoJogo;
     this.aoFechar = aoFechar;
     this.apelido = apelido;
+    this.jogando = false;
     this.aberta = true;
     this.el.classList.remove('oculto');
     tocarSom('carta', 0.35);
@@ -114,9 +117,23 @@ export class CaixaDialogo {
       this.elResposta.classList.remove('oculto');
       this.elCampo.focus();
     } else {
-      this.elContinuar.textContent = this.no.prox ? 'Espaço ▸' : 'Espaço ▸ fechar';
+      this.elContinuar.textContent = this.no.jogo ? 'Espaço ▸ jogar!' : this.no.prox ? 'Espaço ▸' : 'Espaço ▸ fechar';
       this.elContinuar.classList.remove('oculto');
     }
+  }
+
+  // Abre o minijogo do nó; ao terminar, a conversa segue em `prox` (ou em `seSair`, se o aluno desistiu).
+  async #jogar() {
+    const no = this.no;
+    this.jogando = true;
+    this.el.classList.add('oculto');
+    const resultado = await this.aoJogo(no.jogo);
+    this.jogando = false;
+    if (!this.aberta) return;
+    this.el.classList.remove('oculto');
+    const proximo = resultado ? no.prox : no.seSair;
+    if (proximo) this.#mostrar(proximo);
+    else this.fechar();
   }
 
   avancar() {
@@ -125,7 +142,11 @@ export class CaixaDialogo {
       this.#terminarDigitar();
       return;
     }
-    if (this.no.escolhas || this.no.pergunta) return;
+    if (this.no.escolhas || this.no.pergunta || this.jogando) return;
+    if (this.no.jogo) {
+      this.#jogar();
+      return;
+    }
     tocarSom('papel', 0.3);
     if (this.no.prox) this.#mostrar(this.no.prox);
     else this.fechar();
@@ -144,7 +165,7 @@ export class CaixaDialogo {
   }
 
   atualizar(dt, entrada) {
-    if (!this.aberta) return;
+    if (!this.aberta || this.jogando) return;
     if (this.digitando) {
       this.letras = Math.min(this.total, this.letras + CPS * dt);
       this.elTexto.innerHTML = htmlAte(this.partes, Math.floor(this.letras));

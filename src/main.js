@@ -13,6 +13,7 @@ import { CaixaDialogo } from './ui/caixa_dialogo.js';
 import { Hud } from './ui/hud.js';
 import { Diario } from './ui/diario.js';
 import { fluxoInicio } from './ui/telas.js';
+import { PainelJogos } from './minijogos/painel.js';
 import { retrato } from './ui/retratos.js';
 import { NPCS, DIALOGOS, MISSOES } from './conteudo/unidade1.js';
 import { visualDe } from './conteudo/rpg.js';
@@ -27,6 +28,7 @@ aoRedimensionar(cam.camera);
 const entrada = new Entrada(renderer.domElement);
 const dialogo = new CaixaDialogo();
 const hud = new Hud();
+const painelJogos = new PainelJogos();
 
 const bib = await carregarTudo((p) => {
   $('barra-progresso').style.width = `${Math.round(p * 100)}%`;
@@ -69,6 +71,7 @@ function conversar(npc) {
     apelido: estado.d.nome.split(' ')[0],
     aoAcao: (acao) => missoes.acao(acao),
     aoResposta: (id, pergunta, texto) => estado.responder(id, pergunta, texto),
+    aoJogo: jogar,
     aoFechar: () => {
       npc.terminarConversa();
       jogador.parado = false;
@@ -76,6 +79,17 @@ function conversar(npc) {
       missoes.evento(`falou:${npc.def.id}`);
     },
   });
+}
+
+// Abre um minijogo (de uma conversa ou do Diário); guarda as estrelas e avisa as missões.
+async function jogar(id) {
+  jogador.pararDeAndar();
+  const resultado = await painelJogos.abrir(id);
+  if (resultado) {
+    estado.registrarJogo(id, resultado.estrelas);
+    missoes.evento(`jogo:${id}`);
+  }
+  return resultado;
 }
 
 function npcMaisProximo() {
@@ -163,10 +177,10 @@ function quadro(dtFixo) {
     return;
   }
 
-  const estavaConversando = dialogo.aberta;
-  dialogo.atualizar(dt, entrada);
-  if (!estavaConversando && !dialogo.aberta) tratarTeclasDiario();
-  entrada.bloqueado = dialogo.aberta || diario.aberto;
+  const estavaConversando = dialogo.aberta || painelJogos.aberto;
+  if (!painelJogos.aberto) dialogo.atualizar(dt, entrada);
+  if (!estavaConversando && !dialogo.aberta && !painelJogos.aberto) tratarTeclasDiario();
+  entrada.bloqueado = dialogo.aberta || diario.aberto || painelJogos.aberto;
   jogador.parado = entrada.bloqueado;
 
   if (!entrada.bloqueado && !estavaConversando) {
@@ -213,7 +227,7 @@ for (const id of estado.d.regioes) vila.liberarRegiao(id, true);
 estado.on('regiao', ({ id }) => vila.liberarRegiao(id));
 
 hud.ligar(estado, missoes, retratoUrl);
-diario = new Diario({ estado, missoes, retratoUrl, posJogador: () => jogador.posicao, npcs });
+diario = new Diario({ estado, missoes, retratoUrl, posJogador: () => jogador.posicao, npcs, aoJogar: jogar });
 $('btn-diario').addEventListener('click', (e) => { e.currentTarget.blur(); diario.alternar('missoes'); });
 $('btn-mochila').addEventListener('click', (e) => { e.currentTarget.blur(); diario.alternar('mochila'); });
 $('btn-mapa').addEventListener('click', (e) => { e.currentTarget.blur(); diario.alternar('mapa'); });
@@ -226,7 +240,7 @@ renderer.domElement.focus();
 
 // Acesso para depuração no console. simular(s, teclas) roda `s` segundos de jogo com teclas seguradas.
 window.__jogo = {
-  cena, jogador, npcs, cam, colisao, bib, dialogo, entrada, estado, missoes, vila, diario,
+  cena, jogador, npcs, cam, colisao, bib, dialogo, entrada, estado, missoes, vila, diario, painelJogos,
   simular(segundos, teclas = []) {
     teclas.forEach((k) => { entrada.teclas.add(k); entrada.toques.add(k); });
     for (let i = 0; i < segundos * 30; i++) quadro(1 / 30);

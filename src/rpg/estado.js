@@ -65,6 +65,7 @@ export class Estado {
       eventos: [],         // eventos já acontecidos ('falou:beto', 'acao:...')
       regioes: ['praca'],  // regiões sem névoa
       respostas: {},       // id -> { pergunta, texto, em }
+      jogos: {},           // id do minijogo -> melhor número de estrelas (1 a 3)
       pos: null,
       criadoEm: Date.now(),
       salvoEm: Date.now(),
@@ -73,7 +74,9 @@ export class Estado {
 
   static carregar(id) {
     const d = lerTodos()[id];
-    return d?.versao === VERSAO ? new Estado(d) : null;
+    if (d?.versao !== VERSAO) return null;
+    d.jogos ??= {}; // saves de antes dos minijogos
+    return new Estado(d);
   }
 
   static existe(nome, turma) {
@@ -154,6 +157,18 @@ export class Estado {
     if (this.regiaoLiberada(id)) return;
     this.d.regioes.push(id);
     this.emitir('regiao', { id });
+    this.salvarLogo();
+  }
+
+  // Guarda o melhor resultado de um minijogo. XP só pela melhora (10 por estrela nova),
+  // para que jogar de novo valha a pena sem virar "fábrica de XP".
+  registrarJogo(id, estrelas) {
+    const antes = this.d.jogos[id] || 0;
+    if (estrelas > antes) {
+      this.d.jogos[id] = estrelas;
+      this.emitir('jogo', { id, estrelas, recorde: antes > 0 });
+      this.ganharXp((estrelas - antes) * 10);
+    }
     this.salvarLogo();
   }
 

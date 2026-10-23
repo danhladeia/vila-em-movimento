@@ -18,10 +18,14 @@ ESTADO ATUAL (etapas M0, M1 e M2 do PLANO_DO_JOGO.md)
   - Vila 3D com a Praça do Bairro, ruas, prédios, floresta e as 4 estradas das regiões fechadas pela névoa.
   - Início: nome + turma (sem login) e escolha de 5 classes, com cor da roupa.
   - RPG: nível e XP, 5 atributos, mochila com itens, Diário, marcadores ! e ? sobre os moradores.
-  - Missão "Boas-vindas à Vila Ativa": conversar com Beto, Vó Cida e Seu Jorge (atividade física × exercício físico),
-    voltar à prefeita, responder no Diário e ganhar XP, item e Cooperação.
+  - Aparência: 3 visuais por classe (com cabelo comprido ou curto), 6 tons de pele e 5 cores de roupa.
+  - 7 missões em sequência, uma para cada semana do caderno (cada uma afasta a névoa da região seguinte):
+      Praça (sem. 1) → Trilha do Corpo (sem. 2) → Academia (sem. 3) → Arena (sem. 4) → Festival (sem. 5) → Guardião (Checagem 1)
+  - 10 minijogos: classificar, jogo da memória, forca, 2 caça-palavras, ordenar e 4 quizzes.
+    Estrelas de 1 a 3; na aba "Jogos" do Diário dá para jogar de novo (cada estrela nova vale +10 XP).
+  - 7 perguntas de "Depois da prática" ficam guardadas na aba "Respostas" do Diário.
   - Save automático NESTE computador/navegador (nome + turma). Na tela inicial: "Continuar" ou "Apagar".
-  - As regiões 2 a 5 ainda não têm conteúdo (etapas M3 a M5); a névoa já sabe sumir quando uma região for liberada.
+  - Textos dos minijogos: src/conteudo/minijogos.js
 
 PARA EDITAR (precisa do Node.js)
   npm install        instala as dependências (uma vez)

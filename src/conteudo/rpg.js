@@ -82,6 +82,11 @@ export const ITENS = {
   mapa: { nome: 'Mapa do Bairro', icone: 'mapa', texto: 'Lugares do bairro onde dá para se movimentar.' },
   garrafinha: { nome: 'Garrafinha', icone: 'garrafinha', texto: 'Hidratar-se ajuda o corpo a se recuperar.' },
   medalha_praca: { nome: 'Medalha da Praça', icone: 'medalha', texto: 'Por ajudar a Praça do Bairro.' },
+  medalha_trilha: { nome: 'Medalha da Trilha', icone: 'medalha', texto: 'Por aprender a escutar os sinais do corpo.' },
+  cartoes_ginastica: { nome: 'Cartões das Ginásticas', icone: 'diario', texto: 'Musculação, jump, hidroginástica, caminhada e corrida: objetivo, lugar e equipamentos.' },
+  apito_dourado: { nome: 'Apito Dourado', icone: 'prancheta', texto: 'Para organizar aulas com início, meio e fim.' },
+  medalha_amizade: { nome: 'Medalha da Amizade', icone: 'medalha', texto: 'Por trazer o Festival da Comunidade de volta.' },
+  certificado: { nome: 'Certificado Mestre da Vila Ativa', icone: 'trofeu', texto: 'Por vencer o Guardião da Névoa e concluir a Unidade 1.' },
 };
 
 // XP total necessário para cada nível (índice 0 = nível 1).

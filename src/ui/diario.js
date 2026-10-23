@@ -1,7 +1,13 @@
 import { ATRIBUTOS, ATRIBUTO_MAX, CLASSES, ITENS, NIVEIS } from '../conteudo/rpg.js';
 import { REGIOES } from '../conteudo/unidade1.js';
+import { MINIJOGOS } from '../conteudo/minijogos.js';
 import { imgIcone } from './icones.js';
+import { estrelasHtml } from '../minijogos/util.js';
 import { tocarSom } from '../engine/audio.js';
+
+const TIPO_NOME = {
+  classificar: 'Classificar', memoria: 'Jogo da memória', forca: 'Forca', cacapalavras: 'Caça-palavras', ordenar: 'Ordenar', quiz: 'Quiz',
+};
 
 const $ = (id) => document.getElementById(id);
 const escapar = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -9,6 +15,7 @@ const negrito = (s) => escapar(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
 
 const ABAS = [
   { id: 'missoes', nome: 'Missões', icone: 'missao' },
+  { id: 'jogos', nome: 'Jogos', icone: 'trofeu' },
   { id: 'mochila', nome: 'Mochila', icone: 'mochila' },
   { id: 'ficha', nome: 'Ficha', icone: 'xp' },
   { id: 'respostas', nome: 'Respostas', icone: 'diario' },
@@ -17,12 +24,14 @@ const ABAS = [
 
 // Diário do Aventureiro: missões, mochila (inventário), ficha (atributos), respostas e mapa.
 export class Diario {
-  constructor({ estado, missoes, retratoUrl, posJogador, npcs }) {
+  // `aoJogar(id)`: abre um minijogo já conhecido para jogar de novo (aba Jogos).
+  constructor({ estado, missoes, retratoUrl, posJogador, npcs, aoJogar }) {
     this.estado = estado;
     this.missoes = missoes;
     this.retratoUrl = retratoUrl;
     this.posJogador = posJogador;
     this.npcs = npcs;
+    this.aoJogar = aoJogar;
     this.el = $('diario');
     this.aba = 'missoes';
     this.aberto = false;
@@ -53,6 +62,10 @@ export class Diario {
     c.innerHTML = this.#html(aba);
     c.scrollTop = 0;
     if (aba === 'mapa') this.#desenharMapa(c.querySelector('canvas'));
+    c.querySelectorAll('[data-jogar]').forEach((b) => b.addEventListener('click', () => {
+      this.fechar();
+      this.aoJogar?.(b.dataset.jogar);
+    }));
   }
 
   fechar() {
@@ -89,6 +102,19 @@ export class Diario {
       };
       return `${ativas.length ? '<h3 class="secao">Em andamento</h3>' : ''}${ativas.map(bloco).join('')}
         ${concluidas.length ? '<h3 class="secao">Concluídas</h3>' : ''}${concluidas.map(bloco).join('')}`;
+    }
+
+    if (aba === 'jogos') {
+      const cartoes = Object.entries(MINIJOGOS).map(([id, def]) => {
+        const melhor = d.jogos[id] || 0;
+        if (!melhor) {
+          return `<div class="jogo-cartao bloqueado">${imgIcone('cadeado')}<b>???</b><small>Semana ${def.semana} · descubra numa missão</small></div>`;
+        }
+        return `<div class="jogo-cartao"><b>${escapar(def.titulo)}</b><small>Semana ${def.semana} · ${TIPO_NOME[def.tipo]}</small>
+          <div>${estrelasHtml(melhor)}</div>
+          <button class="btn-principal pequeno" data-jogar="${id}">Jogar de novo</button></div>`;
+      }).join('');
+      return `<p class="dica">Jogue de novo para tentar as 3 estrelas. Cada estrela nova vale +10 XP.</p><div class="jogos">${cartoes}</div>`;
     }
 
     if (aba === 'mochila') {
@@ -140,20 +166,27 @@ export class Diario {
   #desenharMapa(canvas) {
     const ctx = canvas.getContext('2d');
     const T = canvas.width;
-    const L = 56; // metade do lado do mundo mostrado
+    const L = 60; // metade do lado do mundo mostrado
     const px = (v) => ((v + L) / (2 * L)) * T;
     ctx.fillStyle = '#9fcb6f';
     ctx.fillRect(0, 0, T, T);
 
-    // Quarteirões de prédios (anel 3) e ruas (anel 2 + estradas).
+    // Quarteirões de prédios (anel 3), ruas (anel 2 + estradas) e clareiras das regiões.
     ctx.fillStyle = '#c9c2d6';
     ctx.fillRect(px(-35), px(-35), px(35) - px(-35), px(35) - px(-35));
     ctx.fillStyle = '#6d6a75';
     ctx.fillRect(px(-25), px(-25), px(25) - px(-25), px(25) - px(-25));
-    ctx.fillRect(px(-5), px(-45), px(5) - px(-5), px(45) - px(-45));
-    ctx.fillRect(px(-45), px(-5), px(45) - px(-45), px(5) - px(-5));
+    ctx.fillRect(px(-5), px(-55), px(5) - px(-5), px(55) - px(-55));
+    ctx.fillRect(px(-55), px(-5), px(55) - px(-55), px(5) - px(-5));
     ctx.fillStyle = '#efe5cf';
     ctx.fillRect(px(-15), px(-15), px(15) - px(-15), px(15) - px(-15));
+    const raio = px(9.5) - px(0);
+    for (const [x, z] of [[0, -50], [0, 50], [-50, 0], [50, 0]]) {
+      ctx.fillStyle = '#e6d9b8';
+      ctx.beginPath();
+      ctx.arc(px(x), px(z), raio, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -161,18 +194,18 @@ export class Diario {
     ctx.fillStyle = '#2a1259';
     ctx.fillText('Praça do Bairro', px(0), px(-10));
 
-    // Rótulos leste/oeste ficam acima da estrada para caber no mapa.
-    const posRegiao = { norte: [0, -50], sul: [0, 50], oeste: [-38, -11], leste: [38, -11] };
+    // Rótulos: norte/sul ao lado da clareira; leste/oeste acima da estrada, para caber no mapa.
+    const posRegiao = { norte: [-27, -48], sul: [-27, 48], oeste: [-44, -16], leste: [44, -16] };
     for (const r of REGIOES) {
       if (!r.porta) continue;
       const [x, z] = posRegiao[r.porta];
       const livre = this.estado.regiaoLiberada(r.id);
-      ctx.fillStyle = livre ? 'rgba(255,255,255,.9)' : 'rgba(185,162,230,.95)';
+      ctx.fillStyle = livre ? 'rgba(255,255,255,.92)' : 'rgba(185,162,230,.95)';
       ctx.beginPath();
-      ctx.roundRect(px(x) - 82, px(z) - 22, 164, 44, 12);
+      ctx.roundRect(px(x) - 64, px(z) - 22, 128, 44, 12);
       ctx.fill();
       ctx.fillStyle = '#2a1259';
-      ctx.font = '800 13px "Trebuchet MS", sans-serif';
+      ctx.font = '800 12px "Trebuchet MS", sans-serif';
       const nomes = r.nome.split(' ');
       const meio = Math.ceil(nomes.length / 2);
       ctx.fillText(nomes.slice(0, meio).join(' '), px(x), px(z) - 7);
