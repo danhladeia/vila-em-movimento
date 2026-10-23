@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A Vila em Movimento</title>
+</head>
+<body>
+  <div id="jogo"></div>
+
+  <!-- Telas e interface (preenchidas pelo JS) -->
+  <div id="ui">
+    <div id="tela-carregando" class="tela">
+      <div class="cartao">
+        <h1>A Vila em Movimento</h1>
+        <p class="sub">Educação Física · 7º ano · Unidade 1</p>
+        <div class="barra"><div id="barra-progresso"></div></div>
+        <p id="texto-progresso">Carregando a vila…</p>
+      </div>
+    </div>
+
+    <div id="tela-titulo" class="tela oculto">
+      <div class="cartao">
+        <h1>A Vila em Movimento</h1>
+        <p class="sub">Educação Física · 7º ano · Unidade 1: Ginástica e saúde</p>
+        <p>A <b>Névoa da Preguiça</b> cobriu a Vila Ativa e os moradores pararam de se movimentar.
+           Você é o <b>Aprendiz do Movimento</b>: explore a vila, converse com os moradores e resolva problemas para afastar a névoa.</p>
+        <div id="lista-saves"></div>
+        <button id="btn-novo" class="btn-principal">Novo jogo</button>
+        <p id="aviso-save" class="dica oculto">Este navegador não deixa salvar o progresso (talvez esteja em janela anônima). Dá para jogar, mas o progresso some ao fechar.</p>
+      </div>
+    </div>
+
+    <div id="tela-nome" class="tela oculto">
+      <form id="form-nome" class="cartao" autocomplete="off">
+        <h2>Quem é você?</h2>
+        <p class="sub">Seu progresso fica salvo neste computador com o seu nome e turma.</p>
+        <label class="campo">Seu nome
+          <input id="in-nome" maxlength="30" required placeholder="Ex.: Ana Souza" />
+        </label>
+        <label class="campo">Sua turma
+          <input id="in-turma" maxlength="12" required placeholder="Ex.: 7º A" />
+        </label>
+        <p id="erro-nome" class="erro oculto"></p>
+        <div class="botoes">
+          <button type="button" class="btn-secundario" data-voltar>Voltar</button>
+          <button type="submit" class="btn-principal">Continuar</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="tela-classe" class="tela oculto">
+      <div class="cartao largo">
+        <h2>Escolha seu personagem</h2>
+        <p class="sub">A classe dá +1 num atributo e um item inicial. A aventura é a mesma para todos!</p>
+        <div id="classes"></div>
+        <div id="tons"><span>Cor da roupa:</span></div>
+        <div class="botoes">
+          <button type="button" class="btn-secundario" data-voltar>Voltar</button>
+          <button id="btn-jogar" class="btn-principal">Começar a aventura</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="hud" class="oculto">
+      <div id="hud-jogador">
+        <img id="hud-retrato" alt="" />
+        <div>
+          <div id="hud-nome"></div>
+          <div id="hud-nivel"></div>
+          <div class="barra-xp"><div id="hud-xp"></div></div>
+        </div>
+      </div>
+      <div id="hud-missao" class="oculto"></div>
+      <div id="hud-regiao"></div>
+      <div id="hud-avisos"></div>
+      <div id="hud-botoes">
+        <button id="btn-diario" title="Diário (Tab)"><img data-icone="diario" alt="" /><span>Diário</span><kbd>Tab</kbd></button>
+        <button id="btn-mochila" title="Mochila (I)"><img data-icone="mochila" alt="" /><span>Mochila</span><kbd>I</kbd></button>
+        <button id="btn-mapa" title="Mapa (M)"><img data-icone="mapa" alt="" /><span>Mapa</span><kbd>M</kbd></button>
+      </div>
+      <div id="hud-ajuda">
+        <span><kbd>WASD</kbd> andar</span>
+        <span><kbd>Shift</kbd> correr</span>
+        <span><kbd>clique</kbd> ir até</span>
+        <span><kbd>E</kbd> conversar</span>
+        <span><kbd>roda</kbd> zoom</span>
+      </div>
+    </div>
+
+    <div id="prompt-interacao" class="oculto"><kbd>E</kbd> <span></span></div>
+
+    <div id="dialogo" class="oculto">
+      <div id="dialogo-nome"></div>
+      <div id="dialogo-texto"></div>
+      <div id="dialogo-escolhas"></div>
+      <form id="dialogo-resposta" class="oculto">
+        <textarea id="dialogo-campo" rows="2" maxlength="400"></textarea>
+        <button type="submit" class="btn-principal pequeno">Guardar no Diário</button>
+      </form>
+      <div id="dialogo-continuar">Espaço ▸</div>
+    </div>
+
+    <div id="diario" class="tela oculto">
+      <div class="painel">
+        <div class="painel-topo">
+          <h2>Diário do Aventureiro</h2>
+          <button id="diario-fechar" class="btn-fechar" title="Fechar (Esc)">✕</button>
+        </div>
+        <nav id="diario-abas"></nav>
+        <div id="diario-conteudo"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

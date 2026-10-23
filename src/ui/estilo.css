@@ -1,0 +1,242 @@
+/* A Vila em Movimento — mesma paleta das Aulas Interativas DED Express. Sem fontes externas. */
+:root {
+  --p: #6a2fb0; --p-d: #2a1259; --p-l: #efe7fb; --p-m: #d9c8f5;
+  --y: #ffc933; --y-d: #c99400; --g: #1fa35c; --b: #2f7ee8;
+  --ink: #1d1433; --mut: #5d5470; --card: #fff;
+  --sh: 0 6px 0 rgba(42, 18, 89, .14), 0 14px 30px rgba(42, 18, 89, .18);
+  --font: "Trebuchet MS", "Segoe UI", Verdana, system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #1b0d3a; font-family: var(--font); color: var(--ink); }
+button { font-family: inherit; cursor: pointer; border: 0; color: inherit; }
+kbd {
+  display: inline-block; min-width: 1.6em; padding: 1px 6px; border-radius: 6px; background: var(--p-l);
+  border: 2px solid var(--p-m); border-bottom-width: 3px; font: 800 .85em var(--font); color: var(--p-d); text-align: center;
+}
+
+#jogo { position: fixed; inset: 0; }
+#jogo canvas { display: block; }
+#ui { position: fixed; inset: 0; pointer-events: none; }
+#ui > * { pointer-events: auto; }
+.oculto { display: none !important; }
+
+/* ---------- telas cheias ---------- */
+.tela {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px;
+  background: radial-gradient(circle at 50% 40%, rgba(42, 18, 89, .55), rgba(18, 8, 43, .85));
+}
+#tela-carregando { background: radial-gradient(circle at 50% 40%, #2a1259, #12082b); }
+.cartao {
+  width: min(560px, 100%); background: var(--card); border-radius: 22px; padding: 30px 30px 26px; text-align: center; box-shadow: var(--sh);
+  border-top: 8px solid var(--y);
+}
+.cartao h1 { font-size: 34px; color: var(--p); letter-spacing: .01em; }
+.cartao .sub { margin: 4px 0 18px; font-weight: 800; color: var(--mut); font-size: 15px; text-transform: uppercase; letter-spacing: .04em; }
+.cartao p { font-size: 18px; line-height: 1.45; margin-bottom: 14px; }
+.cartao .dica { font-size: 14px; color: var(--mut); margin: 16px 0 0; }
+.barra { height: 14px; border-radius: 7px; background: var(--p-l); overflow: hidden; margin: 8px 0 12px; }
+#barra-progresso { height: 100%; width: 0; background: linear-gradient(90deg, var(--p), var(--y)); transition: width .2s; }
+#texto-progresso { font-size: 15px; color: var(--mut); margin: 0; }
+.btn-principal {
+  margin-top: 6px; padding: 14px 44px; border-radius: 999px; background: var(--p); color: #fff; font-size: 22px; font-weight: 900;
+  box-shadow: 0 5px 0 var(--p-d); transition: transform .1s;
+}
+.btn-principal:hover { transform: translateY(-2px); }
+.btn-principal:active { transform: translateY(3px); box-shadow: none; }
+.btn-principal:disabled { opacity: .4; cursor: default; transform: none; }
+.btn-principal.pequeno { padding: 9px 22px; font-size: 16px; margin: 0; box-shadow: 0 4px 0 var(--p-d); }
+.btn-secundario {
+  margin-top: 6px; padding: 14px 30px; border-radius: 999px; background: var(--p-l); color: var(--p-d); font-size: 18px; font-weight: 800;
+  border: 2px solid var(--p-m);
+}
+.botoes { display: flex; justify-content: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+.cartao h2 { font-size: 28px; color: var(--p); }
+.cartao.largo { width: min(980px, 100%); max-height: calc(100vh - 32px); overflow: auto; }
+.rotulo { font-weight: 800; color: var(--mut); font-size: 15px !important; margin: 4px 0 8px !important; text-align: left; }
+.erro { color: #c62f35; font-weight: 800; font-size: 15px !important; }
+
+/* ---------- títulos: jogos salvos ---------- */
+#lista-saves { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; max-height: 260px; overflow: auto; }
+.save { display: flex; gap: 8px; align-items: stretch; }
+.save-continuar {
+  flex: 1; display: flex; align-items: center; gap: 12px; padding: 6px 14px 6px 6px; border-radius: 14px; background: var(--p-l);
+  border: 2px solid var(--p-m); text-align: left; font-size: 17px; color: var(--p-d);
+}
+.save-continuar:hover { background: var(--p-m); }
+.save-continuar img { width: 52px; height: 52px; border-radius: 10px; background: #fff; }
+.save-continuar small { display: block; color: var(--mut); font-size: 13px; font-weight: 700; }
+.save-apagar { padding: 0 12px; border-radius: 12px; background: transparent; color: var(--mut); font-size: 13px; font-weight: 700; text-decoration: underline; }
+
+/* ---------- nome e turma ---------- */
+.campo { display: block; text-align: left; font-weight: 800; color: var(--p-d); margin: 0 0 14px; font-size: 16px; }
+.campo input {
+  display: block; width: 100%; margin-top: 6px; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--p-m); font: 700 19px var(--font);
+  color: var(--ink);
+}
+.campo input:focus { outline: 3px solid var(--y); border-color: var(--p); }
+
+/* ---------- escolha de classe ---------- */
+#classes { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 6px 0 14px; }
+.classe {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 10px 12px; border-radius: 16px; background: var(--p-l);
+  border: 3px solid transparent; text-align: center; transition: transform .1s, border-color .1s;
+}
+.classe:hover { transform: translateY(-3px); }
+.classe[aria-pressed="true"] { border-color: var(--p); background: #fff; box-shadow: 0 0 0 4px var(--y); }
+.classe .retrato { width: 120px; height: 120px; }
+.classe b { font-size: 16px; color: var(--p-d); }
+.classe .bonus { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 800; color: var(--p); }
+.classe small { font-size: 13px; color: var(--mut); line-height: 1.3; }
+.ico { width: 22px; height: 22px; vertical-align: middle; }
+.ico-grande { width: 48px; height: 48px; }
+#tons { display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 800; color: var(--mut); }
+.tom { width: 34px; height: 34px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--p-m); }
+.tom[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--p); transform: scale(1.12); }
+
+/* ---------- HUD ---------- */
+#hud { pointer-events: none; }
+#hud-regiao {
+  position: absolute; top: 18px; left: 50%; transform: translate(-50%, -10px); opacity: 0; transition: opacity .5s, transform .5s;
+  padding: 10px 26px; border-radius: 999px; background: var(--p); color: #fff; font-weight: 900; font-size: 22px; box-shadow: var(--sh);
+  white-space: nowrap;
+}
+#hud-regiao.mostrar { opacity: 1; transform: translate(-50%, 0); }
+#hud-ajuda {
+  position: absolute; left: 16px; bottom: 16px; display: flex; flex-wrap: wrap; gap: 6px 14px; max-width: calc(100% - 32px);
+  padding: 8px 14px; border-radius: 14px; background: rgba(255, 255, 255, .88); font-size: 14px; font-weight: 700; color: var(--mut);
+}
+
+/* ---------- prompt acima do NPC ---------- */
+#prompt-interacao {
+  position: absolute; left: 0; top: 0; transform: translate(-50%, -100%); padding: 6px 14px; border-radius: 999px; background: #fff;
+  font-weight: 800; font-size: 16px; color: var(--p-d); box-shadow: var(--sh); white-space: nowrap; pointer-events: none;
+}
+
+/* ---------- diálogo ---------- */
+#dialogo {
+  position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); width: min(820px, calc(100% - 32px));
+  background: var(--card); border-radius: 20px; padding: 26px 26px 18px; box-shadow: var(--sh); border: 3px solid var(--p-m);
+}
+#dialogo-nome {
+  position: absolute; top: -18px; left: 22px; padding: 6px 18px; border-radius: 999px; background: var(--y); color: var(--p-d);
+  font-weight: 900; font-size: 17px; box-shadow: 0 3px 0 var(--y-d);
+}
+#dialogo-texto { font-size: 20px; line-height: 1.5; min-height: 3em; }
+#dialogo-texto b { color: var(--p); }
+#dialogo-escolhas { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+#dialogo-escolhas:empty { display: none; }
+#dialogo-escolhas button {
+  text-align: left; padding: 10px 16px; border-radius: 12px; background: var(--p-l); border: 2px solid var(--p-m); font-size: 17px;
+  font-weight: 700; color: var(--p-d); transition: background .1s, transform .1s;
+}
+#dialogo-escolhas button:hover, #dialogo-escolhas button:focus-visible { background: var(--p-m); transform: translateX(4px); outline: none; }
+#dialogo-escolhas button kbd { margin-right: 8px; }
+#dialogo-continuar { text-align: right; font-size: 14px; font-weight: 800; color: var(--mut); margin-top: 6px; animation: piscar 1.2s infinite; }
+@keyframes piscar { 50% { opacity: .35; } }
+
+#dialogo-resposta { display: flex; gap: 10px; align-items: flex-end; margin-top: 12px; }
+#dialogo-campo {
+  flex: 1; resize: none; padding: 10px 12px; border-radius: 12px; border: 2px solid var(--p-m); font: 600 17px/1.4 var(--font); color: var(--ink);
+}
+#dialogo-campo:focus { outline: 3px solid var(--y); border-color: var(--p); }
+
+/* ---------- HUD: ficha, missão, avisos, botões ---------- */
+#hud-jogador {
+  position: absolute; top: 14px; left: 14px; display: flex; align-items: center; gap: 10px; padding: 6px 16px 8px 6px;
+  border-radius: 18px; background: rgba(255, 255, 255, .92); box-shadow: var(--sh); min-width: 230px;
+}
+#hud-retrato { width: 58px; height: 58px; border-radius: 14px; background: var(--p-l); }
+#hud-nome { font-weight: 900; font-size: 17px; color: var(--p-d); }
+#hud-nivel { font-weight: 800; font-size: 13px; color: var(--mut); display: flex; align-items: center; gap: 4px; }
+#hud-nivel .ico { width: 18px; height: 18px; }
+.barra-xp { height: 9px; border-radius: 5px; background: var(--p-l); overflow: hidden; margin-top: 5px; }
+#hud-xp { height: 100%; width: 0; background: linear-gradient(90deg, var(--p), var(--y)); transition: width .6s; }
+
+#hud-missao {
+  position: absolute; top: 14px; right: 14px; width: min(330px, 40vw); padding: 12px 16px; border-radius: 16px;
+  background: rgba(255, 255, 255, .92); box-shadow: var(--sh); font-size: 14px;
+}
+#hud-missao > b { display: flex; align-items: center; gap: 6px; color: var(--p); font-size: 15px; margin-bottom: 6px; }
+#hud-missao ul, .objetivos { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+#hud-missao li, .objetivos li { display: flex; align-items: flex-start; gap: 7px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+#hud-missao li i, .objetivos li i {
+  flex: none; width: 16px; height: 16px; margin: 1px 3px; border-radius: 50%; border: 3px solid var(--p-m);
+}
+#hud-missao li .ico, .objetivos li .ico { width: 22px; height: 22px; flex: none; }
+#hud-missao li.ok, .objetivos li.ok { color: var(--mut); text-decoration: line-through; }
+
+#hud-avisos {
+  position: absolute; right: 14px; top: 46%; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; pointer-events: none;
+}
+.aviso {
+  display: flex; align-items: center; gap: 8px; padding: 8px 16px 8px 10px; border-radius: 999px; background: #fff; color: var(--p-d);
+  font-weight: 800; font-size: 16px; box-shadow: var(--sh); animation: entrar .35s ease-out; transition: opacity .5s, transform .5s;
+}
+.aviso .ico { width: 28px; height: 28px; }
+.aviso.grande { background: var(--p); color: #fff; font-size: 18px; padding: 10px 20px 10px 12px; }
+.aviso.saindo { opacity: 0; transform: translateX(30px); }
+@keyframes entrar { from { opacity: 0; transform: translateX(40px); } }
+
+#hud-botoes { position: absolute; right: 14px; bottom: 16px; display: flex; gap: 8px; pointer-events: auto; }
+#hud-botoes button {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; width: 74px; padding: 6px 4px 8px; border-radius: 16px;
+  background: rgba(255, 255, 255, .94); box-shadow: var(--sh); font-weight: 800; font-size: 13px; color: var(--p-d); transition: transform .1s;
+}
+#hud-botoes button:hover { transform: translateY(-3px); }
+#hud-botoes img { width: 36px; height: 36px; }
+#hud-botoes kbd { font-size: 11px; }
+
+/* ---------- Diário ---------- */
+#diario { background: rgba(18, 8, 43, .55); }
+.painel {
+  width: min(860px, 100%); height: min(640px, calc(100vh - 32px)); display: flex; flex-direction: column; background: #fffaf0;
+  border-radius: 22px; box-shadow: var(--sh); border: 4px solid var(--p); overflow: hidden;
+}
+.painel-topo { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 8px 22px; }
+.painel-topo h2 { color: var(--p); font-size: 24px; }
+.btn-fechar { width: 40px; height: 40px; border-radius: 50%; background: var(--p-l); font-size: 18px; font-weight: 900; color: var(--p-d); }
+#diario-abas { display: flex; gap: 6px; padding: 0 16px; border-bottom: 3px solid var(--p-m); flex-wrap: wrap; }
+#diario-abas button {
+  display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 12px 12px 0 0; background: transparent;
+  font-weight: 800; font-size: 15px; color: var(--mut);
+}
+#diario-abas button[aria-pressed="true"] { background: var(--p-m); color: var(--p-d); }
+#diario-conteudo { flex: 1; overflow: auto; padding: 16px 22px 22px; font-size: 16px; line-height: 1.45; }
+#diario-conteudo .vazio { color: var(--mut); text-align: center; margin-top: 40px; font-size: 17px; }
+.marca-amarela { display: inline-block; width: 1.4em; border-radius: 50%; background: var(--y); color: var(--p-d); text-align: center; }
+.secao { color: var(--p-d); font-size: 16px; text-transform: uppercase; letter-spacing: .04em; margin: 6px 0 10px; }
+.missao { background: #fff; border-radius: 14px; padding: 12px 16px; margin-bottom: 12px; border-left: 6px solid var(--y); }
+.missao.concluida { border-left-color: var(--g); opacity: .85; }
+.missao h3 { display: flex; align-items: center; gap: 6px; color: var(--p); font-size: 18px; }
+.missao .meta, .ficha .meta { color: var(--mut); font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.missao .objetivos { margin-top: 8px; }
+.itens { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+.item { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; padding: 12px; border-radius: 14px; background: #fff; }
+.item b { color: var(--p-d); }
+.item small { color: var(--mut); font-size: 13px; line-height: 1.3; }
+.ficha { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+.ficha .retrato { width: 110px; height: 110px; border-radius: 18px; background: var(--p-l); }
+.ficha h3 { font-size: 24px; color: var(--p-d); }
+.ficha .nivel { display: flex; align-items: center; gap: 6px; font-weight: 800; color: var(--p); }
+.atrib { display: grid; grid-template-columns: 28px 120px 1fr 28px; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 800; }
+.pontos { display: flex; gap: 4px; }
+.pontos i { flex: 1; height: 14px; border-radius: 4px; background: var(--p-l); }
+.pontos i.cheio { background: linear-gradient(var(--y), #f5a623); }
+#diario-conteudo .dica { color: var(--mut); font-size: 14px; margin-top: 10px; }
+.resposta { background: #fff; border-radius: 14px; padding: 12px 16px; margin-bottom: 12px; }
+.resposta .pergunta { color: var(--p-d); font-weight: 700; margin-bottom: 4px; }
+.resposta small { color: var(--mut); }
+#diario-conteudo canvas { display: block; width: min(100%, 400px); margin: 0 auto; border-radius: 14px; border: 3px solid var(--p-m); }
+.legenda { display: flex; justify-content: center; align-items: center; gap: 6px 14px; flex-wrap: wrap; margin-top: 10px; font-weight: 700; color: var(--mut); }
+.ponto { display: inline-block; width: 14px; height: 14px; border-radius: 50%; }
+.ponto.voce { background: var(--p); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--p); }
+.ponto.npc { background: #f58220; }
+.ponto.nevoa { background: #b9a2e6; border-radius: 4px; }
+
+@media (max-width: 640px) {
+  #hud-missao { display: none; }
+  #hud-jogador { min-width: 0; }
+  .cartao h1 { font-size: 26px; }
+  #dialogo-texto { font-size: 17px; }
+  #hud-ajuda { display: none; }
+}

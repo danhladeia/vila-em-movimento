@@ -1,0 +1,23 @@
+{
+  "name": "jogo-rpg-ef7",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A Vila em Movimento: RPG 3D de Educação Física, 7º ano, Unidade 1 (DED Express)",
+  "type": "module",
+  "scripts": {
+    "assets": "node scripts/copiar_assets.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "publicar": "vite build && node scripts/publicar.mjs"
+  },
+  "dependencies": {
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@gltf-transform/core": "4.5.1",
+    "@gltf-transform/functions": "4.5.1",
+    "vite": "8.3.5",
+    "vite-plugin-singlefile": "2.3.4"
+  }
+}

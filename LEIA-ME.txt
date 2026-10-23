@@ -1,0 +1,40 @@
+A VILA EM MOVIMENTO — RPG 3D DE EDUCAÇÃO FÍSICA (7º ano, Unidade 1) — DED Express
+==================================================================================
+
+PARA JOGAR (professor e alunos)
+  1. Copie só o arquivo  dist/index.html  (pen drive, nuvem...). Tudo está dentro dele: modelos 3D, sons e código.
+  2. Dê dois cliques nele (Chrome ou Edge). Funciona SEM internet e sem instalar nada.
+
+CONTROLES
+  WASD ou setas ... andar            Shift ...... correr
+  clique no chão .. ir até lá        clique num morador ... ir até ele e conversar
+  E ............... conversar        Espaço ..... avançar a fala      1 a 4 ... escolher resposta
+  roda do mouse ... aproximar/afastar a câmera
+
+  Tab ............. Diário (missões, mochila, ficha, respostas, mapa)
+  I / M ........... abre direto a Mochila / o Mapa         Esc ... fecha o Diário
+
+ESTADO ATUAL (etapas M0, M1 e M2 do PLANO_DO_JOGO.md)
+  - Vila 3D com a Praça do Bairro, ruas, prédios, floresta e as 4 estradas das regiões fechadas pela névoa.
+  - Início: nome + turma (sem login) e escolha de 5 classes, com cor da roupa.
+  - RPG: nível e XP, 5 atributos, mochila com itens, Diário, marcadores ! e ? sobre os moradores.
+  - Missão "Boas-vindas à Vila Ativa": conversar com Beto, Vó Cida e Seu Jorge (atividade física × exercício físico),
+    voltar à prefeita, responder no Diário e ganhar XP, item e Cooperação.
+  - Save automático NESTE computador/navegador (nome + turma). Na tela inicial: "Continuar" ou "Apagar".
+  - As regiões 2 a 5 ainda não têm conteúdo (etapas M3 a M5); a névoa já sabe sumir quando uma região for liberada.
+
+PARA EDITAR (precisa do Node.js)
+  npm install        instala as dependências (uma vez)
+  npm run assets     copia da pasta "Assets 3D" só os modelos e sons usados (para src/assets/)
+  npm run dev        abre o jogo em modo de desenvolvimento (http://localhost:5173)
+  npm run build      gera o dist/index.html final
+  npm run publicar   gera e publica no site: https://danhladeia.github.io/vila-em-movimento/
+
+  Textos, falas e moradores:  src/conteudo/unidade1.js   (não precisa mexer no motor)
+  Mapa da vila:               src/mundo/vila.js
+
+CRÉDITOS
+  Modelos 3D: KayKit (Kay Lousberg) — Adventurers 2.0, Character Animations 1.1, City Builder Bits, Forest Nature Pack (CC0).
+  Sons: JDSherbert — Tabletop Games SFX Pack (FREE).
+  Ícones: Free Icon Pack v3.1 (Basic), de @gvesster.
+  Motor 3D: three.js (MIT).
