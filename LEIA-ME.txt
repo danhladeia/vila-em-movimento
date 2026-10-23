@@ -10,6 +10,8 @@ CONTROLES
   clique no chão .. ir até lá        clique num morador ... ir até ele e conversar
   E ............... conversar        Espaço ..... avançar a fala      1 a 4 ... escolher resposta
   roda do mouse ... aproximar/afastar a câmera
+  V ............... alterna a câmera: de cima (padrão) ou em 3ª pessoa, atrás do personagem
+                    Na 3ª pessoa: arraste o mouse (ou use ← →) para girar; W anda para onde a câmera olha.
 
   Tab ............. Diário (missões, mochila, ficha, respostas, mapa)
   I / M ........... abre direto a Mochila / o Mapa         Esc ... fecha o Diário

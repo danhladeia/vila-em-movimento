@@ -138,6 +138,14 @@ function tratarTeclasDiario() {
   else if (entrada.tocou('Escape') && diario.aberto) diario.fechar();
 }
 
+// ---------- câmera: de cima × 3ª pessoa (tecla V) ----------
+function alternarCamera() {
+  const modo = cam.alternar(jogador.angulo);
+  estado.d.camera = modo;
+  estado.salvarLogo();
+  hud.aviso(modo === 'terceira' ? 'Câmera em 3ª pessoa · arraste o mouse para girar' : 'Câmera de cima', 'mapa');
+}
+
 // ---------- save da posição ----------
 let ultimoSave = 0;
 function salvarPosicao(forcar = false) {
@@ -184,6 +192,12 @@ function quadro(dtFixo) {
   jogador.parado = entrada.bloqueado;
 
   if (!entrada.bloqueado && !estavaConversando) {
+    if (entrada.tocou('KeyV')) alternarCamera();
+    cam.girar(entrada.arrasto.dx, entrada.arrasto.dy);
+    if (cam.modo === 'terceira') {
+      const giro = (entrada.apertada('ArrowLeft') ? -1 : 0) + (entrada.apertada('ArrowRight') ? 1 : 0);
+      cam.girar(giro * 330 * dt, 0); // ~2 rad/s
+    }
     for (const c of entrada.cliques) tratarClique(c);
     const perto = npcMaisProximo();
     if (perto && entrada.tocou('KeyE')) conversar(perto);
@@ -193,13 +207,13 @@ function quadro(dtFixo) {
     hud.prompt(null);
   }
 
-  jogador.atualizar(dt, entrada);
+  jogador.atualizar(dt, entrada, cam.frente(), cam.modo === 'terceira');
   for (const npc of npcs) {
     npc.marcador.definir(missoes.marcadorDe(npc.def.id));
     npc.atualizar(dt);
   }
   vila.atualizar(t, dt);
-  cam.atualizar(dt);
+  cam.atualizar(dt, jogador);
   atualizarSol(jogador.posicao);
   renderer.render(cena, cam.camera);
   salvarPosicao();
@@ -221,6 +235,8 @@ const [px, pz] = estado.d.pos || [INICIO.x, INICIO.z];
 jogador.colocar(px, pz);
 jogador.virarPara(0, 0, true);
 cena.add(jogador.raiz);
+cam.colisao = colisao;
+cam.definirModo(estado.d.camera || 'cima', jogador.angulo);
 cam.seguir(jogador.raiz);
 
 for (const id of estado.d.regioes) vila.liberarRegiao(id, true);

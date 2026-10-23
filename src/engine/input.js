@@ -1,4 +1,5 @@
-// Teclado e clique. Guarda o estado das teclas e entrega "toques" (apertou agora) uma vez por quadro.
+// Teclado, clique e arrasto. Guarda o estado das teclas e entrega "toques" (apertou agora),
+// cliques e o arrasto do mouse uma vez por quadro.
 export class Entrada {
   constructor(dom) {
     this.teclas = new Set();
@@ -19,10 +20,32 @@ export class Entrada {
     window.addEventListener('keyup', (e) => this.teclas.delete(e.code));
     window.addEventListener('blur', () => this.teclas.clear());
 
+    // Mouse: arrastar gira a câmera (3ª pessoa); soltar sem arrastar é um clique (ir até / conversar).
+    this.arrasto = { dx: 0, dy: 0 };
+    let inicio = null;
+    let arrastou = false;
+    dom.addEventListener('contextmenu', (e) => e.preventDefault());
     dom.addEventListener('pointerdown', (e) => {
-      if (e.button !== 0) return;
-      this.cliques.push({ x: (e.clientX / window.innerWidth) * 2 - 1, y: -(e.clientY / window.innerHeight) * 2 + 1 });
+      if (e.button !== 0 && e.button !== 2) return;
+      inicio = { x: e.clientX, y: e.clientY, botao: e.button };
+      arrastou = false;
+      dom.setPointerCapture(e.pointerId);
     });
+    dom.addEventListener('pointermove', (e) => {
+      if (!inicio) return;
+      if (!arrastou && Math.hypot(e.clientX - inicio.x, e.clientY - inicio.y) > 6) arrastou = true;
+      if (arrastou) {
+        this.arrasto.dx += e.movementX;
+        this.arrasto.dy += e.movementY;
+      }
+    });
+    dom.addEventListener('pointerup', (e) => {
+      if (inicio && !arrastou && inicio.botao === 0) {
+        this.cliques.push({ x: (e.clientX / window.innerWidth) * 2 - 1, y: -(e.clientY / window.innerHeight) * 2 + 1 });
+      }
+      inicio = null;
+    });
+    dom.addEventListener('pointercancel', () => { inicio = null; });
   }
 
   apertada(...codigos) {
@@ -33,10 +56,13 @@ export class Entrada {
     return codigos.some((c) => this.toques.has(c));
   }
 
-  // Direção pedida pelo teclado no plano (x = direita, y = para cima na tela).
-  direcao() {
+  // Direção pedida pelo teclado no plano (x = direita, y = para a frente).
+  // Com `setasGiram` (3ª pessoa), ← e → giram a câmera em vez de andar de lado.
+  direcao(setasGiram = false) {
     if (this.bloqueado) return { x: 0, y: 0 };
-    const x = (this.apertada('KeyD', 'ArrowRight') ? 1 : 0) - (this.apertada('KeyA', 'ArrowLeft') ? 1 : 0);
+    const dir = setasGiram ? ['KeyD'] : ['KeyD', 'ArrowRight'];
+    const esq = setasGiram ? ['KeyA'] : ['KeyA', 'ArrowLeft'];
+    const x = (this.apertada(...dir) ? 1 : 0) - (this.apertada(...esq) ? 1 : 0);
     const y = (this.apertada('KeyW', 'ArrowUp') ? 1 : 0) - (this.apertada('KeyS', 'ArrowDown') ? 1 : 0);
     return { x, y };
   }
@@ -44,5 +70,7 @@ export class Entrada {
   fimDoQuadro() {
     this.toques.clear();
     this.cliques.length = 0;
+    this.arrasto.dx = 0;
+    this.arrasto.dy = 0;
   }
 }

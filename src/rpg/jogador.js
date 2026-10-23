@@ -26,15 +26,18 @@ export class Jogador extends Ator {
     this.alvoNpc = null;
   }
 
-  atualizar(dt, entrada) {
+  // `frente` = direção da câmera no chão ({x, z}); o teclado anda relativo a ela.
+  // `setasGiram`: na 3ª pessoa, ← e → são da câmera, não do personagem.
+  atualizar(dt, entrada, frente = { x: 0, z: -1 }, setasGiram = false) {
     let dir = new THREE.Vector2();
     const correndo = entrada.apertada('ShiftLeft', 'ShiftRight');
+    this.andandoParaFrente = false;
 
     if (!this.parado) {
-      const tecla = entrada.direcao();
+      const tecla = entrada.direcao(setasGiram);
       if (tecla.x || tecla.y) {
-        // Câmera fixa olhando para o norte: "para cima" na tela é -z.
-        dir.set(tecla.x, -tecla.y).normalize();
+        // direita da câmera = (-frente.z, frente.x)
+        dir.set(-frente.z * tecla.x + frente.x * tecla.y, frente.x * tecla.x + frente.z * tecla.y).normalize();
         this.pararDeAndar();
       } else if (this.destino) {
         const dx = this.destino.x - this.posicao.x;
@@ -56,6 +59,8 @@ export class Jogador extends Ator {
       const antes = this.posicao.clone();
       this.mover({ x: dir.x * vel * dt, z: dir.y * vel * dt });
       this.anguloAlvo = Math.atan2(dir.x, dir.y);
+      // Só conta andar quase reto para a frente: andar de lado (A/D) não deve fazer a câmera girar.
+      this.andandoParaFrente = dir.x * frente.x + dir.y * frente.z > 0.9;
       this.anim.tocar(correndo ? 'Running_A' : 'Walking_A');
 
       // Clique para um lugar bloqueado: desiste depois de um tempinho empurrando a parede.
