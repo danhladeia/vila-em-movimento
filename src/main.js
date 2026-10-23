@@ -15,7 +15,7 @@ import { Diario } from './ui/diario.js';
 import { fluxoInicio } from './ui/telas.js';
 import { retrato } from './ui/retratos.js';
 import { NPCS, DIALOGOS, MISSOES } from './conteudo/unidade1.js';
-import { CLASSES } from './conteudo/rpg.js';
+import { visualDe } from './conteudo/rpg.js';
 
 const DIST_CONVERSA = 2.6;
 const INICIO = new THREE.Vector3(0, 0, 12);
@@ -198,10 +198,10 @@ $('tela-carregando').classList.add('oculto');
 // ---------- entrada do aluno ----------
 estado = await fluxoInicio({ renderer, bib });
 missoes = new Missoes(estado, MISSOES);
-const classe = CLASSES.find((c) => c.id === estado.d.classe);
-const retratoUrl = retrato(renderer, bib, classe.modelo, estado.d.tom);
+const aparencia = { tom: estado.d.tom, pele: estado.d.pele ?? null };
+const retratoUrl = retrato(renderer, bib, visualDe(estado.d), aparencia);
 
-jogador = new Jogador(bib, colisao, classe.modelo, { tom: estado.d.tom });
+jogador = new Jogador(bib, colisao, visualDe(estado.d), aparencia);
 jogador.aoChegarNpc = conversar;
 const [px, pz] = estado.d.pos || [INICIO.x, INICIO.z];
 jogador.colocar(px, pz);

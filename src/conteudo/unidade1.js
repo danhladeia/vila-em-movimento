@@ -12,13 +12,14 @@ export const REGIOES = [
 ];
 
 // NPCs. `pos` em quarteirões (1 quarteirão = 10 m; centro da praça = 0,0; norte = z negativo).
+// `visual`, `tom` (roupa) e `pele`: como em CLASSES[].visuais e PELES (src/conteudo/rpg.js).
 // comportamento: 'parado' | 'sentado' | 'passear' (segue `rota` em loop)
 // dialogos: o primeiro cuja condição `se` valer é o usado. Condições:
 //   { missao: 'id', estado: 'nova' | 'ativa' | 'pronta' | 'concluida' }   ('pronta' = só falta entregar)
 //   { marca: 'nome' }   (uma ação que já aconteceu, como 'jorge_aprendeu')
 export const NPCS = [
   {
-    id: 'prefeita', nome: 'Prefeita Dona Lúcia', modelo: 'Mage', tom: '#ffe6c7',
+    id: 'prefeita', nome: 'Prefeita Dona Lúcia', visual: { corpo: 'Mage' }, tom: '#ffe6c7', pele: '#b57650',
     pos: [0.35, 0.35], olhar: [0, 1], comportamento: 'parado',
     dialogos: [
       { se: { missao: 'boas_vindas', estado: 'nova' }, dialogo: 'prefeita_intro' },
@@ -28,15 +29,15 @@ export const NPCS = [
     ],
   },
   {
-    id: 'beto', nome: 'Treinador Beto', modelo: 'Barbarian', tom: null,
+    id: 'beto', nome: 'Treinador Beto', visual: { corpo: 'Barbarian' }, tom: null, pele: '#74492e',
     pos: [-0.38, -3.6], olhar: [0, 1], comportamento: 'parado', dialogos: [{ dialogo: 'beto_trilha' }],
   },
   {
-    id: 'cida', nome: 'Vó Cida', modelo: 'Knight', tom: '#e9d7ff',
+    id: 'cida', nome: 'Vó Cida', visual: { corpo: 'Knight', cabeca: 'Mage', semChapeu: true }, tom: '#e9d7ff', pele: '#93603f',
     pos: [-0.4, 0.9], olhar: [0, -1], comportamento: 'sentado', dialogos: [{ dialogo: 'cida_banco' }],
   },
   {
-    id: 'jorge', nome: 'Seu Jorge', modelo: 'Rogue', tom: '#cfe8ff', comportamento: 'passear',
+    id: 'jorge', nome: 'Seu Jorge', visual: { corpo: 'Ranger' }, tom: '#cfe8ff', pele: '#d9a07a', comportamento: 'passear',
     rota: [[-0.65, -0.65], [0.65, -0.65], [0.65, 0.65], [-0.65, 0.65]], pos: [-0.65, -0.65],
     dialogos: [
       { se: { marca: 'jorge_aprendeu' }, dialogo: 'jorge_depois' },

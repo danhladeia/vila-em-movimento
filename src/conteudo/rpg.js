@@ -10,31 +10,67 @@ export const ATRIBUTOS = [
 export const ATRIBUTO_MAX = 10;
 
 // A classe só dá +1 num atributo e um item inicial: o conteúdo do jogo é igual para todos.
+// `visuais`: aparências que o aluno pode escolher. A cabeça (rosto e cabelo) pode vir de outro modelo:
+// 'Rogue' e 'Mage' têm cabelo comprido; 'Ranger', cabelo curto. Ver Biblioteca.personagem.
 export const CLASSES = [
   {
-    id: 'forca', modelo: 'Barbarian', nome: 'Guardião da Força', atributo: 'forca', item: 'faixa',
+    id: 'forca', nome: 'Guardiã(o) da Força', atributo: 'forca', item: 'faixa',
     texto: 'Gosta de desafios de força, com pesos ou com o próprio corpo.',
+    visuais: [
+      { corpo: 'Barbarian', cabeca: 'Rogue', semChapeu: true },
+      { corpo: 'Barbarian' },
+      { corpo: 'Barbarian', cabeca: 'Mage', semChapeu: true },
+    ],
   },
   {
-    id: 'resistencia', modelo: 'Ranger', nome: 'Andarilho da Resistência', atributo: 'resistencia', item: 'tenis',
+    id: 'resistencia', nome: 'Andarilha(o) da Resistência', atributo: 'resistencia', item: 'tenis',
     texto: 'Caminha e corre longas distâncias sem perder o ritmo.',
+    visuais: [
+      { corpo: 'Ranger' },
+      { corpo: 'Ranger', cabeca: 'Rogue' },
+      { corpo: 'Ranger', cabeca: 'Mage' },
+    ],
   },
   {
-    id: 'agilidade', modelo: 'Rogue', nome: 'Ágil das Trilhas', atributo: 'agilidade', item: 'cronometro',
-    texto: 'Rápido nas mudanças de direção e atento ao tempo.',
+    id: 'agilidade', nome: 'Ágil das Trilhas', atributo: 'agilidade', item: 'cronometro',
+    texto: 'Rápida(o) nas mudanças de direção e atenta(o) ao tempo.',
+    visuais: [
+      { corpo: 'Rogue' },
+      { corpo: 'Rogue', cabeca: 'Ranger' },
+      { corpo: 'Rogue_Hooded' },
+    ],
   },
   {
-    id: 'flexibilidade', modelo: 'Mage', nome: 'Sábio do Alongamento', atributo: 'flexibilidade', item: 'colchonete',
+    id: 'flexibilidade', nome: 'Sábia(o) do Alongamento', atributo: 'flexibilidade', item: 'colchonete',
     texto: 'Cuida do corpo com alongamento e respiração.',
+    visuais: [
+      { corpo: 'Mage' },
+      { corpo: 'Mage', cabeca: 'Rogue', semChapeu: true },
+      { corpo: 'Mage', cabeca: 'Ranger' },
+    ],
   },
   {
-    id: 'cooperacao', modelo: 'Knight', nome: 'Capitão da Equipe', atributo: 'cooperacao', item: 'prancheta',
+    id: 'cooperacao', nome: 'Capitã(o) da Equipe', atributo: 'cooperacao', item: 'prancheta',
     texto: 'Organiza o grupo e garante que todos participem.',
+    visuais: [
+      { corpo: 'Knight', cabeca: 'Rogue', semChapeu: true },
+      { corpo: 'Knight', cabeca: 'Ranger', semChapeu: true },
+      { corpo: 'Knight' },
+    ],
   },
 ];
 
+// Aparência salva do aluno (saves antigos não têm `visual`: usa a primeira).
+export function visualDe(d) {
+  const classe = CLASSES.find((c) => c.id === d.classe);
+  return classe.visuais[d.visual ?? 0] ?? classe.visuais[0];
+}
+
 // Tons para a roupa do personagem (multiplicam a textura original; null = cor original).
 export const TONS = [null, '#8ec5ff', '#ff9ccb', '#a6e88c', '#ffd75e'];
+
+// Tons de pele (null = tom original dos modelos).
+export const PELES = [null, '#f6cfae', '#d9a07a', '#b57650', '#93603f', '#74492e'];
 
 export const ITENS = {
   diario: { nome: 'Diário do Aventureiro', icone: 'diario', texto: 'Guarda suas missões, respostas e descobertas. Abra com a tecla Tab.' },

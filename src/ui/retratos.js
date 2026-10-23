@@ -9,8 +9,9 @@ const SRGB = Uint8Array.from({ length: 256 }, (_, i) => {
   return Math.round(255 * (c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055));
 });
 
-export function retrato(renderer, bib, modelo, tom = null) {
-  const chave = `${modelo}|${tom}`;
+// `visual` como em Biblioteca.personagem; `opcoes` = { tom, pele }.
+export function retrato(renderer, bib, visual, opcoes = {}) {
+  const chave = JSON.stringify([visual, opcoes.tom ?? null, opcoes.pele ?? null]);
   if (cache.has(chave)) return cache.get(chave);
 
   const cena = new THREE.Scene();
@@ -19,7 +20,7 @@ export function retrato(renderer, bib, modelo, tom = null) {
   luz.position.set(2, 4, 5);
   cena.add(luz);
 
-  const obj = bib.personagem(modelo, { tom });
+  const obj = bib.personagem(visual, opcoes);
   const anim = new Animador(bib, obj);
   anim.tocar('Idle_A', { transicao: 0 });
   anim.atualizar(0.4);

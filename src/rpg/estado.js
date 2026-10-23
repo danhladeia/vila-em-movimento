@@ -44,7 +44,8 @@ export class Estado {
     this.timerSalvar = null;
   }
 
-  static novo(nome, turma, classeId, tom) {
+  // `visual` = índice em CLASSES[].visuais; `tom` = cor da roupa; `pele` = cor da pele.
+  static novo(nome, turma, classeId, { visual = 0, tom = null, pele = null } = {}) {
     const classe = CLASSES.find((c) => c.id === classeId);
     const atributos = Object.fromEntries(ATRIBUTOS.map((a) => [a.id, 1]));
     atributos[classe.atributo] += 1;
@@ -54,7 +55,9 @@ export class Estado {
       nome: nome.trim(),
       turma: turma.trim(),
       classe: classeId,
+      visual,
       tom,
+      pele,
       xp: 0,
       atributos,
       itens: [classe.item],

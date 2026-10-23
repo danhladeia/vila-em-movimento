@@ -7,7 +7,7 @@ const VEL_PASSEIO = 1.6;
 // Morador da vila. Comportamentos: 'parado', 'sentado' ou 'passear' (rota em loop).
 export class Npc extends Ator {
   constructor(bib, colisao, def) {
-    super(bib, colisao, def.modelo, { tom: def.tom });
+    super(bib, colisao, def.visual, { tom: def.tom, pele: def.pele });
     this.def = def;
     this.conversando = false;
     this.indiceRota = 1;
